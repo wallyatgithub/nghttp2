@@ -66,9 +66,25 @@ int main(int argc, char *argv[]) {
       res.write_head(200, {{"foo", {"bar"}}});
       res.end("hello, world\n");
     });
-    server.handle("/secret/", [](const request &req, const response &res) {
-      res.write_head(200);
-      res.end("under construction!\n");
+    server.handle("/nudm-ee/", [](const request &req, const response &res) {
+      static uint64_t count = 0;
+      count++;
+      std::string location_header_value = "http://192.168.1.2";
+      location_header_value.append(req.uri().path);
+      if (count%11 == 0) {
+        res.write_head(200, {{"foo", {"bar"}}});
+        res.end("200!\n");
+      }
+      else if (count%13 == 0) {
+        res.write_head(404, {{"foo", {"bar"}}});
+        res.end("404!\n");
+      }
+      else if (count%29 == 0) {
+      }
+      else {
+        res.write_head(200, {{"location", {location_header_value}}});
+        res.end("location returned!\n");
+      }
     });
     server.handle("/push", [](const request &req, const response &res) {
       boost::system::error_code ec;
