@@ -69,20 +69,26 @@ int main(int argc, char *argv[]) {
     server.handle("/nudm-ee/", [](const request &req, const response &res) {
       static uint64_t count = 0;
       count++;
-      std::string location_header_value = "http://192.168.1.2";
-      location_header_value.append(req.uri().path);
+      std::string location_header_value = "http://192.168.1.107:8080";
+      location_header_value.append(req.uri().path).append("fake-resource-from-mock-server").append(std::to_string(rand()));
       if (count%11 == 0) {
         res.write_head(200, {{"foo", {"bar"}}});
         res.end("200!\n");
       }
-      else if (count%13 == 0) {
+      else if (count%39 == 0) {
         res.write_head(404, {{"foo", {"bar"}}});
         res.end("404!\n");
       }
-      else if (count%29 == 0) {
+      else if (count%41 == 0) {
       }
       else {
-        res.write_head(200, {{"location", {location_header_value}}});
+        res.write_head(201,
+        {
+         {"location", {location_header_value}}
+        ,{"Set-Cookie", {"yummy_cookie=choco; tasty_cookie=strawberry; Path=/nudm-ee/"}}
+        ,{"Set-Cookie", {"id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT"}}
+        ,{"Set-Cookie", {"key=value; SameSite=Strict"}}
+        });
         res.end("location returned!\n");
       }
     });

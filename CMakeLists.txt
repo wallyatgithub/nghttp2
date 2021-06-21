@@ -234,7 +234,7 @@ endif()
 if(ENABLE_HPACK_TOOLS AND NOT HAVE_JANSSON)
   message(FATAL_ERROR "HPACK tools were requested (ENABLE_HPACK_TOOLS=1) but dependencies are not met.")
 endif()
-
+set (ENABLE_EXAMPLES ON)
 # C++ library libnghttp2_asio
 if(ENABLE_EXAMPLES AND NOT (OPENSSL_FOUND AND LIBEVENT_OPENSSL_FOUND))
   message(FATAL_ERROR "examples were requested (ENABLE_EXAMPLES=1) but dependencies are not met.")
@@ -449,7 +449,7 @@ foreach(name
 )
   configure_file("${name}.in" "${name}" @ONLY)
 endforeach()
-
+set(ENABLE_ASIO_LIB ON)
 include_directories(
   "${CMAKE_CURRENT_BINARY_DIR}" # for config.h
 )
