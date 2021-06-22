@@ -69,7 +69,11 @@ int main(int argc, char *argv[]) {
     server.handle("/nudm-ee/", [](const request &req, const response &res) {
       static uint64_t count = 0;
       count++;
-      std::string location_header_value = "http://192.168.1.107:8080";
+      std::string location_header_value = "";
+      if (rand()%2 == 0)
+      {
+        location_header_value.append("http://192.168.1.107:8080");
+      }
       location_header_value.append(req.uri().path).append("fake-resource-from-mock-server").append(std::to_string(rand()));
       if (count%11 == 0) {
         res.write_head(200, {{"foo", {"bar"}}});
