@@ -70,11 +70,12 @@ int main(int argc, char *argv[]) {
       static uint64_t count = 0;
       count++;
       std::string location_header_value = "";
-      if (rand()%2 == 0)
-      {
-        location_header_value.append("http://192.168.1.107:8080");
-      }
+      //if (rand()%2 == 0)
+      //{
+      //  location_header_value.append("http://192.168.1.125:8080");
+      //}
       location_header_value.append(req.uri().path).append("fake-resource-from-mock-server").append(std::to_string(rand()));
+      /*
       if (count%11 == 0) {
         res.write_head(200, {{"foo", {"bar"}}});
         res.end("200!\n");
@@ -83,7 +84,9 @@ int main(int argc, char *argv[]) {
         res.write_head(404, {{"foo", {"bar"}}});
         res.end("404!\n");
       }
-      else if (count%41 == 0) {
+      */
+      //else 
+      if (count%1141 == 0) {
       }
       else {
         res.write_head(201,
