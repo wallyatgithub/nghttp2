@@ -6,11 +6,13 @@ if(ENABLE_EXAMPLES)
   set_source_files_properties(${cxx_sources} PROPERTIES
     COMPILE_FLAGS "${WARNCXXFLAGS} ${CXX1XCXXFLAGS}")
 
+add_subdirectory(third-party/StaticJSON)
+
   include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/../third-party"
     "${CMAKE_CURRENT_SOURCE_DIR}/../third-party/llhttp/include"
-
+    "${CMAKE_CURRENT_SOURCE_DIR}/third-party/StaticJSON/include"
     ${LIBEVENT_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIRS}
   )
@@ -38,7 +40,7 @@ if(ENABLE_EXAMPLES)
   if(ENABLE_ASIO_LIB)
     foreach(name asio-sv asio-sv2 asio-cl asio-cl2)
       add_executable(${name} ${name}.cc $<TARGET_OBJECTS:llhttp>
-        $<TARGET_OBJECTS:url-parser>
+        $<TARGET_OBJECTS:url-parser>  $<TARGET_OBJECTS:staticjson>
       )
       target_include_directories(${name} PRIVATE
         ${OPENSSL_INCLUDE_DIRS}

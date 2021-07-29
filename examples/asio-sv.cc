@@ -38,6 +38,7 @@
 #include <string>
 
 #include <nghttp2/asio_http2_server.h>
+#include "h2server_Config_Schema.h"
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
