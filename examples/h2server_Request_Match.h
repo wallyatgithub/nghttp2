@@ -8,6 +8,8 @@
 #include <map>
 #include "h2server_Config_Schema.h"
 #include "h2server_Resonse.h"
+#include "h2server_Message.h"
+
 
 using rapidjson;
 
@@ -110,9 +112,19 @@ public:
       for (auto& schema_payload_match: request_match.payload_match)
       match_payload.emplace_back(Match_Payload(schema_payload_match));
   }
-  bool match()
+  bool match(const H2Server_Request_Message& request)
   {
-      
+      if (!match_header.match(request.path))
+      {
+          return false;
+      }
+      for (auto& payload_match: match_payload)
+      {
+          if (!payload_match.match(request.json_payload))
+          {
+              return false;
+          }
+      }
   }
 };
 
