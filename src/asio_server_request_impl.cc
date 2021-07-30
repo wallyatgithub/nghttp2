@@ -68,6 +68,12 @@ void request_impl::update_header_buffer_size(size_t len) {
   header_buffer_size_ += len;
 }
 
+const std::string& request_impl::payload() const
+{
+  return payload;
+}
+
+
 } // namespace server
 } // namespace asio_http2
 } // namespace nghttp2

@@ -60,6 +60,7 @@ public:
 
   size_t header_buffer_size() const;
   void update_header_buffer_size(size_t len);
+  const std::string& payload() const;
 
 private:
   class stream *strm_;
@@ -69,6 +70,7 @@ private:
   data_cb on_data_cb_;
   boost::asio::ip::tcp::endpoint remote_ep_;
   size_t header_buffer_size_;
+  std::string payload;
 };
 
 } // namespace server

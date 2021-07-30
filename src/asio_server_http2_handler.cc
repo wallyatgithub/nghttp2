@@ -60,6 +60,9 @@ int on_begin_headers_callback(nghttp2_session *session,
   }
 
   handler->create_stream(frame->hd.stream_id);
+  strm->request().impl().on_data([this](const uint8_t *data, std::size_t len) {
+    this->payload.append(reinterpret_cast<const char *>(data), len);
+  });
 
   return 0;
 }
@@ -146,14 +149,17 @@ int on_frame_recv_callback(nghttp2_session *session, const nghttp2_frame *frame,
     auto &req = strm->request().impl();
     req.remote_endpoint(handler->remote_endpoint());
 
-    handler->call_on_request(*strm);
-
     if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM) {
       strm->request().impl().call_on_data(nullptr, 0);
     }
 
     break;
   }
+  }
+
+  if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM)
+  {
+      handler->call_on_request(*strm);
   }
 
   return 0;

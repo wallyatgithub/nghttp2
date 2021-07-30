@@ -62,6 +62,8 @@ public:
   // Returns the remote endpoint of the request
   const boost::asio::ip::tcp::endpoint &remote_endpoint() const;
 
+  const std::string& payload() const;
+
 private:
   std::unique_ptr<request_impl> impl_;
 };

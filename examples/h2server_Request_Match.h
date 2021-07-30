@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 #include "h2server_Config_Schema.h"
+#include "h2server_Resonse.h"
 
 using rapidjson;
 
@@ -63,6 +64,7 @@ bool match(const std::string& subject, Match_Type verb, const std::string& objec
 class Match_Interface {
 public:
   std::list<Match_Interface*> next_matches;
+  H2Server_Response* response_to_return;
 };
 
 class Match_Header: public Match_Interface{
@@ -81,33 +83,6 @@ public:
     return match(subject, match_type, object);
   }
 };
-
-std::string getJsonPointerValue(const rapidjson::Document::Document& d, const std::string& json_pointer)
-{
-    rapidjson::Pointer ptr(json_pointer);
-    rapidjson::Value* value = ptr.Get(d);
-    if (value)
-    {
-        if (value->IsString())
-        {
-            return value->getString();
-        }
-        else if (value->IsBool())
-        {
-            return value->getBool() ? "true":"false";
-        }
-        else if (value->IsUint64())
-        {
-            return std::to_string(value->getUint64());
-        }
-        else if (value->IsDouble())
-        {
-            return std::to_string(value->getDouble());
-        }
-    }
-    return "";
-}
-
 class Match_Payload: public Match_Interface{
 public:
   Match_Type match_type;
@@ -125,74 +100,33 @@ public:
   }
 };
 
-
-enum Type_Of_Payload_Argument {
-    JSON_PTR = 0,
-    PATH_TOKEN
-};
-
-
-
-class Payload_Argument_Interface {
+class H2Server_Request {
 public:
-    std::string getValue() = 0;
-};
-
-class Payload_Argument: public Payload_Argument_Interface {
-public:
-  std::string json_pointer;
-  uint64_t substring_start;
-  uint64_t substring_end;
-  Payload_Argument_JsonPtr(Schema_Payload_Argument payload_argument)
+  Match_Header match_header;
+  std::vector<Match_Payload> match_payload;
+  H2Server_Request(const Schema_Request_Match& request_match):
+  match_header(request_match.path_match)
+  {
+      for (auto& schema_payload_match: request_match.payload_match)
+      match_payload.emplace_back(Match_Payload(schema_payload_match));
+  }
+  bool match()
   {
       
   }
-  std::string getValue(const rapidjson::Document::Document& d)
-  {
-      std::string str = getJsonPointerValue(d, json_pointer);
-      if (substring_start > 0 && substring_end > substring_start &&
-          str.size() > substring_start && str.size() >= substring_end)
-      {
-          return str.substring(substring_start, substring_end);
-      }
-      else
-      {
-          return str;
-      }
-  }
-  virtual std::string getValue()
-  {
-      return 
-  }
 };
 
-class Payload_Argument_Path {
+
+class H2Server_Service {
 public:
-  size_t index;
-  uint64_t substring_start;
-  uint64_t substring_end;
-  std::string getValue(const std::vector<std::string>& tokens)
+  H2Server_Request request;
+  H2Server_Response response;
+  H2Server_Service(const Schema_Service& service):
+  request(service.request),
+  response(service.response)
   {
-      if (index < tokens.size())
-      {
-          std::string str = tokens[index];
-          if (substring_start > 0 && substring_end > substring_start &&
-              str.size() > substring_start && str.size() >= substring_end)
-          {
-              return getString(*value).substring(substring_start, substring_end);
-          }
-          else
-          {
-              return str;
-          }
-      }
-      else
-      {
-          return "";
-      }
   }
 };
-
 
 
 #endif

@@ -54,6 +54,12 @@ const boost::asio::ip::tcp::endpoint &request::remote_endpoint() const {
   return impl_->remote_endpoint();
 }
 
+const std::string& request::payload() const
+{
+  return impl_->payload();
+}
+
+
 } // namespace server
 } // namespace asio_http2
 } // namespace nghttp2
