@@ -46,10 +46,12 @@
                   "matchType":{
                     "type":"string",
                     "description": "Type of match action",
+                    "default": "StartsWith",
                     "enum": ["EqualsTo", "StartsWith", "EndsWith", "Contains"]
                   },
                   "input":{
                     "description": "Content used to execute the matchType above against the received path; i.e., received :path header should either equal to or start with or end with or contain the content specified in this field",
+                    "default": "/",
                     "type":"string"
                   }
                 }
@@ -77,8 +79,11 @@
                     }
                   }
                 }
-              }             
-            }
+              }
+            },
+            "required":[
+              "path"
+            ]
           },
           "Response":{
             "description": "Response message to be returned in response to the request above",
