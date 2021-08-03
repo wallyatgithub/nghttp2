@@ -63,6 +63,7 @@ public:
   const boost::asio::ip::tcp::endpoint &remote_endpoint() const;
 
   std::string& payload();
+  const std::string& unmutable_payload() const;
 
 private:
   std::unique_ptr<request_impl> impl_;

@@ -73,6 +73,11 @@ std::string& request_impl::payload()
   return payload_;
 }
 
+const std::string& request_impl::unmutable_payload() const
+{
+  return payload_;
+}
+
 
 } // namespace server
 } // namespace asio_http2

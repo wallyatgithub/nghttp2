@@ -81,7 +81,7 @@ public:
         substring_start = payload_argument.substring_start;
         substring_end = payload_argument.substring_end;
     }
-    std::string getValue(const rapidjson::Document& d, const std::string path_header_value)
+    std::string getValue(const rapidjson::Document& d, const std::string path_header_value) const
     {
         std::string str;
         if (json_pointer.size())
@@ -160,7 +160,7 @@ public:
         }
     }
 
-    std::string produce_payload(const rapidjson::Document& d, const std::string path_header_value)
+    std::string produce_payload(const rapidjson::Document& d, const std::string path_header_value) const
     {
         std::string payload;
         for (size_t index = 0; index < tokenizedPayload.size(); index++)

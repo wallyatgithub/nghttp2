@@ -61,6 +61,7 @@ public:
   size_t header_buffer_size() const;
   void update_header_buffer_size(size_t len);
   std::string& payload();
+  const std::string& unmutable_payload() const;
 
 private:
   class stream *strm_;

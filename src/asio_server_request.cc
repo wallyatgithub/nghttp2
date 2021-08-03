@@ -59,6 +59,11 @@ std::string& request::payload()
   return impl_->payload();
 }
 
+const std::string& request::unmutable_payload() const
+{
+  return impl_->unmutable_payload();
+}
+
 
 } // namespace server
 } // namespace asio_http2

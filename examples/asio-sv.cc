@@ -36,10 +36,12 @@
 
 #include <iostream>
 #include <string>
+#include <fstream>
 
 #include <nghttp2/asio_http2_server.h>
 #include "h2server_Config_Schema.h"
 #include "h2server_Request_Match.h"
+#include "h2server.h"
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
@@ -47,120 +49,64 @@ using namespace nghttp2::asio_http2::server;
 int main(int argc, char *argv[]) {
   try {
     // Check command line arguments.
-    if (argc < 4) {
-      std::cerr
-          << "Usage: asio-sv <address> <port> <threads> [<private-key-file> "
-          << "<cert-file>]\n";
+    if (argc < 2) {
+      std::cerr<< "Usage: asio-sv config.json";
       return 1;
     }
 
+    std::string config_file_name = argv[1];
+    std::ifstream buffer(config_file_name);
+    std::string jsonStr((std::istreambuf_iterator<char>(buffer)),
+                        std::istreambuf_iterator<char>());
+    staticjson::ParseStatus result;
+    H2Server_Config_Schema config_schema;
+    if (!staticjson::from_json_string(jsonStr.c_str(), &config_schema, &result))
+    {
+        std::cout << "error reading config file:" << result.description() << std::endl;
+        exit(1);
+    }
+
+    H2Server h2server(config_schema);
+
     boost::system::error_code ec;
 
-    std::string addr = argv[1];
-    std::string port = argv[2];
-    std::size_t num_threads = std::stoi(argv[3]);
+    std::string addr = config_schema.address;
+    std::string port = std::to_string(config_schema.port);
+    std::size_t num_threads = config_schema.threads;
 
     http2 server;
 
     server.num_threads(num_threads);
 
-    server.handle("/", [](const request &req, const response &res) {
-      res.write_head(200, {{"foo", {"bar"}}});
-      res.end("hello, world\n");
-    });
-    server.handle("/nudm-ee/", [](const request &req, const response &res) {
-      static uint64_t count = 0;
-      count++;
-      std::string location_header_value = "";
-      //if (rand()%2 == 0)
-      //{
-      //  location_header_value.append("http://192.168.1.125:8080");
-      //}
-      location_header_value.append(req.uri().path).append("fake-resource-from-mock-server").append(std::to_string(rand()));
-      /*
-      if (count%11 == 0) {
-        res.write_head(200, {{"foo", {"bar"}}});
-        res.end("200!\n");
+    server.handle("/", [&](const request &req, const response &res) {
+
+      H2Server_Request_Message msg(req);
+      auto matched_response = h2server.get_response_to_return(msg);
+      if (matched_response)
+      {
+          header_map headers;
+          for (auto header: matched_response->additonalHeaders)
+          {
+              nghttp2::asio_http2::header_value hdr_val;
+              hdr_val.sensitive = false;
+              hdr_val.value = header.second;
+              headers.insert(std::make_pair(header.first, hdr_val));
+          }
+          res.write_head(matched_response->status_code, headers);
+          res.end(matched_response->produce_payload(msg.json_payload, msg.path));
       }
-      else if (count%39 == 0) {
-        res.write_head(404, {{"foo", {"bar"}}});
-        res.end("404!\n");
+      else
+      {
+          res.write_head(200, {{"foo", {"bar"}}});
+          res.end("hello, world\n");
       }
-      */
-      //else 
-      if (count%1141 == 0) {
-      }
-      else {
-        res.write_head(201,
-        {
-         {"location", {location_header_value}}
-        ,{"Set-Cookie", {"yummy_cookie=choco; tasty_cookie=strawberry; Path=/nudm-ee/"}}
-        ,{"Set-Cookie", {"id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT"}}
-        ,{"Set-Cookie", {"key=value; SameSite=Strict"}}
-        });
-        res.end("location returned!\n");
-      }
-    });
-    server.handle("/push", [](const request &req, const response &res) {
-      boost::system::error_code ec;
-      auto push = res.push(ec, "GET", "/push/1");
-      if (!ec) {
-        push->write_head(200);
-        push->end("server push FTW!\n");
-      }
-
-      res.write_head(200);
-      res.end("you'll receive server push!\n");
-    });
-    server.handle("/delay", [](const request &req, const response &res) {
-      res.write_head(200);
-
-      auto timer = std::make_shared<boost::asio::deadline_timer>(
-          res.io_service(), boost::posix_time::seconds(3));
-      auto closed = std::make_shared<bool>();
-
-      res.on_close([timer, closed](uint32_t error_code) {
-        timer->cancel();
-        *closed = true;
-      });
-
-      timer->async_wait([&res, closed](const boost::system::error_code &ec) {
-        if (ec || *closed) {
-          return;
-        }
-
-        res.end("finally!\n");
-      });
-    });
-    server.handle("/trailer", [](const request &req, const response &res) {
-      // send trailer part.
-      res.write_head(200, {{"trailers", {"digest"}}});
-
-      std::string body = "nghttp2 FTW!\n";
-      auto left = std::make_shared<size_t>(body.size());
-
-      res.end([&res, body, left](uint8_t *dst, std::size_t len,
-                                 uint32_t *data_flags) {
-        auto n = std::min(len, *left);
-        std::copy_n(body.c_str() + (body.size() - *left), n, dst);
-        *left -= n;
-        if (*left == 0) {
-          *data_flags |=
-              NGHTTP2_DATA_FLAG_EOF | NGHTTP2_DATA_FLAG_NO_END_STREAM;
-          // RFC 3230 Instance Digests in HTTP.  The digest value is
-          // SHA-256 message digest of body.
-          res.write_trailer(
-              {{"digest",
-                {"SHA-256=qqXqskW7F3ueBSvmZRCiSwl2ym4HRO0M/pvQCBlSDis="}}});
-        }
-        return n;
-      });
+      
     });
 
-    if (argc >= 6) {
+    if (config_schema.cert_file.size() && config_schema.private_key_file.size()) {
       boost::asio::ssl::context tls(boost::asio::ssl::context::sslv23);
-      tls.use_private_key_file(argv[4], boost::asio::ssl::context::pem);
-      tls.use_certificate_chain_file(argv[5]);
+      tls.use_private_key_file(config_schema.private_key_file, boost::asio::ssl::context::pem);
+      tls.use_certificate_chain_file(config_schema.cert_file);
 
       configure_tls_context_easy(ec, tls);
 

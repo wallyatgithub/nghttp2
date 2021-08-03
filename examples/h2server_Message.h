@@ -20,10 +20,10 @@ public:
     std::multimap<std::string, std::string> headers;
     rapidjson::Document  json_payload;
     std::map<size_t, bool> match_result;
-    H2Server_Request_Message(nghttp2::asio_http2::server::request& req)
+    H2Server_Request_Message(const nghttp2::asio_http2::server::request& req)
     {
         path = req.uri().path;
-        json_payload.Parse(req.payload().c_str());
+        json_payload.Parse(req.unmutable_payload().c_str());
     }
 };
 

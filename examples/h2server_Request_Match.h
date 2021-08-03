@@ -133,7 +133,7 @@ public:
             match_rules.emplace(Match_Rule(schema_payload_match));
         }
     }
-    bool match(H2Server_Request_Message& request)
+    bool match(H2Server_Request_Message& request) const
     {
         for (auto & match_rule : match_rules)
         {
@@ -142,6 +142,7 @@ public:
                 return false;
             }
         }
+        return true;
     }
     bool operator<(const H2Server_Request& rhs) const
     {
@@ -179,47 +180,5 @@ public:
 };
 
 
-class H2Server_Service
-{
-public:
-    H2Server_Request request;
-    H2Server_Response response;
-    H2Server_Service(const Schema_Service& service):
-        request(service.request),
-        response(service.response)
-    {
-    }
-};
-
-void build_match_rule_unique_id(std::vector<H2Server_Service>& services)
-{
-    std::set<Match_Rule> all_match_rules;
-    for (auto& each_service : services)
-    {
-        for (auto& match_rule : each_service.request.match_rules)
-        {
-            all_match_rules.insert(match_rule);
-        }
-    }
-
-    size_t i = 0;
-    for (auto& rule : all_match_rules)
-    {
-        for (auto& each_service : services)
-        {
-            std::set<Match_Rule> new_match_rules;
-            for (auto match_rule : each_service.request.match_rules)
-            {
-                if ((!(rule < match_rule)) && (!(match_rule < rule)))
-                {
-                    match_rule.unique_id = i;
-                    new_match_rules.insert(match_rule);
-                }
-            }
-            each_service.request.match_rules.swap(new_match_rules);
-        }
-        i++;
-    }
-}
 
 #endif
