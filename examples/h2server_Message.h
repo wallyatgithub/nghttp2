@@ -11,18 +11,20 @@
 #include "h2server_Config_Schema.h"
 
 
-using rapidjson;
+using namespace rapidjson;
 
-class H2Server_Request_Message {
+class H2Server_Request_Message
+{
 public:
-  std::string path;
-  std::multimap<std::string, std::string> headers;
-  rapidjson::Document::Document json_payload;
-  H2Server_Request_Message(const request &req)
-  {
-      path = req.uri().path;
-      json_payload.Parse(req.payload().c_str());
-  }
+    std::string path;
+    std::multimap<std::string, std::string> headers;
+    rapidjson::Document  json_payload;
+    std::map<size_t, bool> match_result;
+    H2Server_Request_Message(nghttp2::asio_http2::server::request& req)
+    {
+        path = req.uri().path;
+        json_payload.Parse(req.payload().c_str());
+    }
 };
 
 #endif

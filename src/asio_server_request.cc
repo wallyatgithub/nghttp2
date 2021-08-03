@@ -54,7 +54,7 @@ const boost::asio::ip::tcp::endpoint &request::remote_endpoint() const {
   return impl_->remote_endpoint();
 }
 
-const std::string& request::payload() const
+std::string& request::payload()
 {
   return impl_->payload();
 }

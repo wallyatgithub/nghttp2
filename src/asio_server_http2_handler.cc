@@ -59,9 +59,9 @@ int on_begin_headers_callback(nghttp2_session *session,
     return 0;
   }
 
-  handler->create_stream(frame->hd.stream_id);
-  strm->request().impl().on_data([this](const uint8_t *data, std::size_t len) {
-    this->payload.append(reinterpret_cast<const char *>(data), len);
+  auto strm = handler->create_stream(frame->hd.stream_id);
+  strm->request().impl().on_data([&](const uint8_t *data, std::size_t len) {
+    strm->request().impl().payload().append(reinterpret_cast<const char *>(data), len);
   });
 
   return 0;

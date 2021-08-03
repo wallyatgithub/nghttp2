@@ -68,9 +68,9 @@ void request_impl::update_header_buffer_size(size_t len) {
   header_buffer_size_ += len;
 }
 
-const std::string& request_impl::payload() const
+std::string& request_impl::payload()
 {
-  return payload;
+  return payload_;
 }
 
 

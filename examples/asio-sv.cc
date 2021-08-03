@@ -39,6 +39,7 @@
 
 #include <nghttp2/asio_http2_server.h>
 #include "h2server_Config_Schema.h"
+#include "h2server_Request_Match.h"
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
