@@ -191,34 +191,35 @@ public:
     }
 };
 
-
 void build_match_rule_unique_id(std::vector<H2Server_Service>& services)
 {
     std::set<Match_Rule> all_match_rules;
-    for (auto & each_service : services)
+    for (auto& each_service : services)
     {
-        for (auto & match_rule : each_service.request.match_rules)
+        for (auto& match_rule : each_service.request.match_rules)
         {
             all_match_rules.insert(match_rule);
         }
     }
 
     size_t i = 0;
-    for (auto & rule : all_match_rules)
+    for (auto& rule : all_match_rules)
     {
-        for (auto & each_service : services)
+        for (auto& each_service : services)
         {
-            for (auto & match_rule : each_service.request.match_rules)
+            std::set<Match_Rule> new_match_rules;
+            for (auto match_rule : each_service.request.match_rules)
             {
                 if ((!(rule < match_rule)) && (!(match_rule < rule)))
                 {
                     match_rule.unique_id = i;
+                    new_match_rules.insert(match_rule);
                 }
             }
+            each_service.request.match_rules.swap(new_match_rules);
         }
         i++;
     }
 }
-
 
 #endif
