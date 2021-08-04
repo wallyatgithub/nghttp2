@@ -6,8 +6,8 @@
 #include <vector>
 #include <list>
 #include <map>
-#include "h2server_Config_Schema.h"
-#include "h2server_Message.h"
+#include "H2Server_Config_Schema.h"
+#include "H2Server_Request_Message.h"
 
 using namespace rapidjson;
 

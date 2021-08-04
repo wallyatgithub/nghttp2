@@ -8,7 +8,7 @@
 #include <map>
 #include <nghttp2/asio_http2_server.h>
 
-#include "h2server_Config_Schema.h"
+#include "H2Server_Config_Schema.h"
 
 
 using namespace rapidjson;
