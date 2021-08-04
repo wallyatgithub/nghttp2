@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 #include "h2server_Config_Schema.h"
+#include "h2server_Message.h"
 
 using namespace rapidjson;
 
@@ -66,6 +67,7 @@ public:
     uint64_t index;
     uint64_t substring_start;
     uint64_t substring_end;
+    std::string header_name;
     Payload_Argument(const Schema_Payload_Argument& payload_argument)
     {
         if (payload_argument.type_of_value == "JsonPointer")
@@ -77,23 +79,24 @@ public:
         {
             index = std::stoi(payload_argument.value_identifier);
             json_pointer = "";
+            header_name = ":path";
         }
         substring_start = payload_argument.substring_start;
         substring_end = payload_argument.substring_end;
     }
-    std::string getValue(const rapidjson::Document& d, const std::string path_header_value) const
+    std::string getValue(const H2Server_Request_Message& msg) const
     {
         std::string str;
         if (json_pointer.size())
         {
-            str = getJsonPointerValue(d, json_pointer);
+            str = getJsonPointerValue(msg.json_payload, json_pointer);
         }
-        else
+        else if (msg.headers.count(header_name))
         {
-            auto tokens = tokenize_string(path_header_value, "/");
+            auto tokens = tokenize_string(msg.headers.find(header_name)->second, "/");
             if (index < tokens.size())
             {
-                std::string str = tokens[index];
+                str = tokens[index];
             }
         }
 
@@ -160,7 +163,7 @@ public:
         }
     }
 
-    std::string produce_payload(const rapidjson::Document& d, const std::string path_header_value) const
+    std::string produce_payload(const H2Server_Request_Message& msg) const
     {
         std::string payload;
         for (size_t index = 0; index < tokenizedPayload.size(); index++)
@@ -168,7 +171,7 @@ public:
             payload.append(tokenizedPayload[index]);
             if (index < payload_arguments.size())
             {
-                payload.append(payload_arguments[index].getValue(d, path_header_value));
+                payload.append(payload_arguments[index].getValue(msg));
             }
         }
         return payload;

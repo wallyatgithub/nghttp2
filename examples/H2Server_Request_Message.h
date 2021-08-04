@@ -16,14 +16,18 @@ using namespace rapidjson;
 class H2Server_Request_Message
 {
 public:
-    std::string path;
     std::multimap<std::string, std::string> headers;
     rapidjson::Document  json_payload;
     std::map<size_t, bool> match_result;
     H2Server_Request_Message(const nghttp2::asio_http2::server::request& req)
     {
-        path = req.uri().path;
         json_payload.Parse(req.unmutable_payload().c_str());
+        std::string path_header_name = ":path";
+        headers.insert(std::make_pair(path_header_name, req.uri().path));
+        for (auto& hdr : req.header())
+        {
+            headers.insert(std::make_pair(hdr.first, hdr.second.value));
+        }
     }
 };
 

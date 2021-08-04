@@ -39,9 +39,9 @@
 #include <fstream>
 
 #include <nghttp2/asio_http2_server.h>
-#include "h2server_Config_Schema.h"
-#include "h2server_Request_Match.h"
-#include "h2server.h"
+#include "H2Server_Config_Schema.h"
+#include "H2Server_Request.h"
+#include "H2Server.h"
 
 using namespace nghttp2::asio_http2;
 using namespace nghttp2::asio_http2::server;
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   try {
     // Check command line arguments.
     if (argc < 2) {
-      std::cerr<< "Usage: asio-sv config.json";
+      std::cerr<< "Usage: asio-sv config.json"<<std::endl;
       return 1;
     }
 
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
               headers.insert(std::make_pair(header.first, hdr_val));
           }
           res.write_head(matched_response->status_code, headers);
-          res.end(matched_response->produce_payload(msg.json_payload, msg.path));
+          res.end(matched_response->produce_payload(msg));
       }
       else
       {
@@ -102,6 +102,8 @@ int main(int argc, char *argv[]) {
       }
       
     });
+
+    std::cout<<"addr: "<<addr<<", port: "<<port<<std::endl;
 
     if (config_schema.cert_file.size() && config_schema.private_key_file.size()) {
       boost::asio::ssl::context tls(boost::asio::ssl::context::sslv23);

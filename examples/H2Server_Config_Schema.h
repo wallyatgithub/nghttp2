@@ -98,8 +98,8 @@ public:
     Schema_Response_To_Return response;
     void staticjson_init(staticjson::ObjectHandler* h)
     {
-        h->add_property("request", &this->request);
-        h->add_property("response", &this->response);
+        h->add_property("Request", &this->request);
+        h->add_property("Response", &this->response);
     }
 };
 
@@ -117,9 +117,9 @@ public:
         h->add_property("address", &this->address);
         h->add_property("port", &this->port);
         h->add_property("threads", &this->threads);
-        h->add_property("private-key-file", &this->private_key_file);
-        h->add_property("cert_file", &this->cert_file);
-        h->add_property("service", &this->service);
+        h->add_property("private-key-file", &this->private_key_file, staticjson::Flags::Optional);
+        h->add_property("cert_file", &this->cert_file, staticjson::Flags::Optional);
+        h->add_property("Service", &this->service);
     }
 };
 

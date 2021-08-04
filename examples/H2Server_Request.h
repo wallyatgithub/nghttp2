@@ -88,7 +88,19 @@ public:
         }
         else
         {
-            bool matched = (header_name.size() ? match(request.path) : match(request.json_payload));
+            bool matched = false;
+            if (header_name.size())
+            {
+                auto header_val = request.headers.find(header_name);
+                if (header_val != request.headers.end())
+                {
+                    matched = match(header_val->second);
+                }
+            }
+            else
+            {
+                matched = match(request.json_payload);
+            }
             request.match_result[unique_id] = matched;
             return matched;
         }
@@ -112,9 +124,9 @@ public:
             mine.append(object);
 
             std::string other = std::to_string(rhs.match_type);
-            other.append(header_name);
-            other.append(json_pointer);
-            other.append(object);
+            other.append(rhs.header_name);
+            other.append(rhs.json_pointer);
+            other.append(rhs.object);
             return (mine < other);
         }
     }
@@ -135,7 +147,7 @@ public:
     }
     bool match(H2Server_Request_Message& request) const
     {
-        for (auto & match_rule : match_rules)
+        for (auto& match_rule : match_rules)
         {
             if (!match_rule.match(request))
             {

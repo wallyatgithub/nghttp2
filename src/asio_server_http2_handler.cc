@@ -59,10 +59,7 @@ int on_begin_headers_callback(nghttp2_session *session,
     return 0;
   }
 
-  auto strm = handler->create_stream(frame->hd.stream_id);
-  strm->request().impl().on_data([&](const uint8_t *data, std::size_t len) {
-    strm->request().impl().payload().append(reinterpret_cast<const char *>(data), len);
-  });
+  handler->create_stream(frame->hd.stream_id);
 
   return 0;
 }
@@ -140,6 +137,11 @@ int on_frame_recv_callback(nghttp2_session *session, const nghttp2_frame *frame,
       strm->request().impl().call_on_data(nullptr, 0);
     }
 
+    if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM)
+    {
+        handler->call_on_request(*strm);
+    }
+
     break;
   case NGHTTP2_HEADERS: {
     if (!strm || frame->headers.cat != NGHTTP2_HCAT_REQUEST) {
@@ -153,13 +155,13 @@ int on_frame_recv_callback(nghttp2_session *session, const nghttp2_frame *frame,
       strm->request().impl().call_on_data(nullptr, 0);
     }
 
+    if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM)
+    {
+        handler->call_on_request(*strm);
+    }
+
     break;
   }
-  }
-
-  if (frame->hd.flags & NGHTTP2_FLAG_END_STREAM)
-  {
-      handler->call_on_request(*strm);
   }
 
   return 0;
@@ -176,6 +178,8 @@ int on_data_chunk_recv_callback(nghttp2_session *session, uint8_t flags,
   if (!strm) {
     return 0;
   }
+
+  strm->request().impl().payload().append((const char*)data, len);
 
   strm->request().impl().call_on_data(data, len);
 
