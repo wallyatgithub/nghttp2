@@ -78,4 +78,17 @@ if(ENABLE_THIRD_PARTY)
       ADDITIONAL_MAKE_CLEAN_FILES mruby/build
     )
   endif()
+
+  include_directories(
+  "${CMAKE_CURRENT_SOURCE_DIR}/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/StaticJSON/include"
+  )
+
+  set(LIBSTATICJSON_SOURCE
+  StaticJSON/src/staticjson.cpp
+  )
+  add_library(staticjson OBJECT ${LIBSTATICJSON_SOURCE})
+  set_target_properties(staticjson PROPERTIES
+  POSITION_INDEPENDENT_CODE ON)
+
 endif()
