@@ -29,12 +29,12 @@ public:
     std::string json_pointer;
     std::string object;
     mutable uint64_t unique_id;
-    Match_Rule(const Schema_Path_Match& path_match)
+    Match_Rule(const Schema_Header_Match& header_match)
     {
-        object = path_match.input;
-        header_name = ":path";
+        object = header_match.input;
+        header_name = header_match.header;
         json_pointer = "";
-        match_type = string_to_match_type[path_match.matchType];
+        match_type = string_to_match_type[header_match.matchType];
     }
     Match_Rule(const Schema_Payload_Match& payload_match)
     {
@@ -48,6 +48,10 @@ public:
 
     bool match(const std::string& subject, Match_Type verb, const std::string& object) const
     {
+        if (debug_mode)
+        {
+            std::cout<<"subject: "<<subject<<", match type: "<<verb<<", object: "<<object<<std::endl;
+        }
         switch (verb)
         {
             case EQUALS_TO:
@@ -64,7 +68,7 @@ public:
             }
             case CONTAINS:
             {
-                (subject.find(object) != std::string::npos);
+                return (subject.find(object) != std::string::npos);
             }
         }
         return false;
@@ -139,7 +143,11 @@ public:
     std::set<Match_Rule> match_rules;
     H2Server_Request(const Schema_Request_Match& request_match)
     {
-        match_rules.emplace(Match_Rule(request_match.path_match));
+        for (auto& schema_header_match : request_match.header_match)
+        {
+            match_rules.emplace(Match_Rule(schema_header_match));
+        }
+
         for (auto& schema_payload_match : request_match.payload_match)
         {
             match_rules.emplace(Match_Rule(schema_payload_match));

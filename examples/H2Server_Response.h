@@ -64,22 +64,20 @@ class Payload_Argument
 {
 public:
     std::string json_pointer;
-    uint64_t index;
-    uint64_t substring_start;
-    uint64_t substring_end;
+    int64_t substring_start;
+    int64_t substring_end;
     std::string header_name;
     Payload_Argument(const Schema_Payload_Argument& payload_argument)
     {
         if (payload_argument.type_of_value == "JsonPointer")
         {
             json_pointer = payload_argument.value_identifier;
-            index = 0;
+            header_name = "";
         }
-        else if (payload_argument.type_of_value == "TokenInPath")
+        else if (payload_argument.type_of_value == "Header")
         {
-            index = std::stoi(payload_argument.value_identifier);
             json_pointer = "";
-            header_name = ":path";
+            header_name = payload_argument.value_identifier;
         }
         substring_start = payload_argument.substring_start;
         substring_end = payload_argument.substring_end;
@@ -93,15 +91,22 @@ public:
         }
         else if (msg.headers.count(header_name))
         {
-            auto tokens = tokenize_string(msg.headers.find(header_name)->second, "/");
-            if (index < tokens.size())
-            {
-                str = tokens[index];
-            }
+            str = msg.headers.find(header_name)->second;
         }
 
-        if (substring_start > 0 && substring_end > substring_start &&
-            str.size() > substring_start && str.size() >= substring_end)
+        if (debug_mode)
+        {
+            std::cout<<"json_pointer: "<<json_pointer<<std::endl;
+            std::cout<<"header_name: "<<header_name<<std::endl;
+            std::cout<<"target string: "<<str<<std::endl;
+            std::cout<<"substring_start: "<<substring_start<<std::endl;
+            std::cout<<"substring_end: "<<substring_end<<std::endl;
+        }
+
+
+        if (((substring_start > 0) || (substring_end != -1))&&
+            (substring_start < static_cast<int64_t>(str.size()))&&
+            ((substring_end <= static_cast<int64_t>(str.size()) && substring_start < substring_end)||substring_end == -1))
         {
             return str.substr(substring_start, substring_end);
         }

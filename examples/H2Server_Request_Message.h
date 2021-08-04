@@ -28,6 +28,13 @@ public:
         {
             headers.insert(std::make_pair(hdr.first, hdr.second.value));
         }
+        if (debug_mode)
+        {
+            for (auto& header: headers)
+            {
+                std::cout<<"header: "<<header.first<<", value: "<<header.second<<std::endl;
+            }
+        }
     }
 };
 

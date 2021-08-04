@@ -65,6 +65,10 @@ int main(int argc, char *argv[]) {
         std::cout << "error reading config file:" << result.description() << std::endl;
         exit(1);
     }
+    if (config_schema.verbose)
+    {
+        debug_mode = true;
+    }
 
     H2Server h2server(config_schema);
 
@@ -97,8 +101,8 @@ int main(int argc, char *argv[]) {
       }
       else
       {
-          res.write_head(200, {{"foo", {"bar"}}});
-          res.end("hello, world\n");
+          res.write_head(404, {{"reason", {"no match found"}}});
+          res.end("no matched entry found\n");
       }
       
     });

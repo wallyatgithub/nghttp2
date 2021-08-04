@@ -8,15 +8,18 @@
 #include "rapidjson/schema.h"
 #include "rapidjson/prettywriter.h"
 
+bool debug_mode = false;
 
-class Schema_Path_Match
+class Schema_Header_Match
 {
 public:
     std::string matchType;
+    std::string header;
     std::string input;
     void staticjson_init(staticjson::ObjectHandler* h)
     {
         h->add_property("matchType", &this->matchType);
+        h->add_property("header-name", &this->header);
         h->add_property("input", &this->input);
     }
 };
@@ -38,12 +41,12 @@ public:
 class Schema_Request_Match
 {
 public:
-    Schema_Path_Match path_match;
+    std::vector<Schema_Header_Match> header_match;
     std::vector<Schema_Payload_Match> payload_match;
     void staticjson_init(staticjson::ObjectHandler* h)
     {
-        h->add_property("path", &this->path_match);
-        h->add_property("payload", &this->payload_match);
+        h->add_property("headers", &this->header_match);
+        h->add_property("payload", &this->payload_match, staticjson::Flags::Optional);
     }
 };
 
@@ -106,6 +109,7 @@ public:
 class H2Server_Config_Schema
 {
 public:
+    bool verbose;
     std::string address;
     uint32_t port;
     uint32_t threads;
@@ -114,6 +118,7 @@ public:
     std::vector<Schema_Service> service;
     void staticjson_init(staticjson::ObjectHandler* h)
     {
+        h->add_property("verbose", &this->verbose, staticjson::Flags::Optional);
         h->add_property("address", &this->address);
         h->add_property("port", &this->port);
         h->add_property("threads", &this->threads);

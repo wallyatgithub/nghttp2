@@ -52,7 +52,7 @@ std::ostream& operator<<(std::ostream& o, const H2Server_Response& response)
     for (auto& arg : response.payload_arguments)
     {
         o << "json_pointer: " << arg.json_pointer << std::endl;
-        o << "index: " << arg.index << std::endl;
+        o << "header name: " << arg.header_name << std::endl;
         o << "substring_start: " << arg.substring_start << std::endl;
         o << "substring_end: " << arg.substring_end << std::endl;
     }
@@ -103,8 +103,16 @@ public:
     {
         for (auto iter = services.rbegin(); iter != services.rend(); iter++)
         {
+            if (debug_mode)
+            {
+                std::cout<<"checking request: "<<iter->first<<std::endl;
+            }
             if (iter->first.match(msg))
             {
+                if (debug_mode)
+                {
+                    std::cout<<"find matched response: "<<iter->second<<std::endl;
+                }
                 return &iter->second;
             }
         }
